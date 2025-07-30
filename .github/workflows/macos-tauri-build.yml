@@ -1,0 +1,43 @@
+name: Build Tauri macOS App
+
+on:
+  push:
+    branches: [main] # or "master" or your deployment branch
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🧰 Set up Node.js and pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 📦 Install dependencies
+        run: |
+          pnpm install
+
+      - name: 🔧 Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: rust-src
+
+      - name: 🧱 Install Tauri CLI
+        run: pnpm dlx tauri@latest build
+
+      - name: 📤 Upload macOS Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tauri-macos-build
+          path: |
+            src-tauri/target/release/bundle/macos
