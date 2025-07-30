@@ -2,7 +2,7 @@ name: Build Tauri macOS App
 
 on:
   push:
-    branches: [main] # or "master" or your deployment branch
+    branches: [main] # Adjust to your main branch
   workflow_dispatch:
 
 jobs:
@@ -12,21 +12,21 @@ jobs:
     steps:
       - name: ⬇️ Checkout code
         uses: actions/checkout@v4
+        with:
+          path: .
 
-      - name: 🧰 Set up pnpm
+      - name: 🧰 Set up Node.js and pnpm
         uses: pnpm/action-setup@v2
         with:
           version: 8
 
-      - name: 📦 Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
 
       - name: 📦 Install dependencies
-        run: pnpm install --frozen-lockfile
-        working-directory: ./
-  
+        run: pnpm install --no-frozen-lockfile
+
       - name: 🔧 Install Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
@@ -34,12 +34,11 @@ jobs:
           override: true
           components: rust-src
 
-      - name: 🧱 Build Tauri app
-        run: pnpm dlx tauri@latest build
+      - name: 🧱 Build Tauri App (macOS)
+        run: pnpm dlx tauri build
 
       - name: 📤 Upload macOS Build Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: tauri-macos-build
-          path: |
-            src-tauri/target/release/bundle/macos
+          path: src-tauri/target/release/bundle/macos
