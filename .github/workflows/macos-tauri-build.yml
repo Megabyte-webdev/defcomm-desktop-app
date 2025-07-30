@@ -2,7 +2,7 @@ name: Build Tauri macOS App
 
 on:
   push:
-    branches: [main] # Adjust to your main branch
+    branches: [main] # Adjust to your deployment branch
   workflow_dispatch:
 
 jobs:
@@ -24,8 +24,15 @@ jobs:
         with:
           node-version: 20
 
+      - name: 🛠️ Install Python distutils for sharp
+        run: |
+          brew install python@3.11
+          /opt/homebrew/opt/python@3.11/bin/python3.11 -m ensurepip
+          /opt/homebrew/opt/python@3.11/bin/python3.11 -m pip install setuptools
+
       - name: 📦 Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: |
+          PYTHON=/opt/homebrew/opt/python@3.11/bin/python3.11 pnpm install --no-frozen-lockfile
 
       - name: 🔧 Install Rust toolchain
         uses: actions-rs/toolchain@v1
