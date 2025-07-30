@@ -1,3 +1,6 @@
+packages:
+  - '.' # This includes the root directory as a package
+
 onlyBuiltDependencies:
   - '@tailwindcss/oxide'
   - esbuild
