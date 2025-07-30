@@ -24,9 +24,9 @@ jobs:
           node-version: 20
 
       - name: 📦 Install dependencies
-        run: |
-          pnpm install --filter . --frozen-lockfile
-
+        run: pnpm install --frozen-lockfile
+        working-directory: ./
+  
       - name: 🔧 Install Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
