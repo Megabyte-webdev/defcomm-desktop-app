@@ -13,17 +13,19 @@ jobs:
       - name: ⬇️ Checkout code
         uses: actions/checkout@v4
 
-      - name: 🧰 Set up Node.js and pnpm
+      - name: 🧰 Set up pnpm
         uses: pnpm/action-setup@v2
         with:
           version: 8
-      - uses: actions/setup-node@v4
+
+      - name: 📦 Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
 
       - name: 📦 Install dependencies
         run: |
-          pnpm install
+          pnpm install --filter . --frozen-lockfile
 
       - name: 🔧 Install Rust toolchain
         uses: actions-rs/toolchain@v1
@@ -32,7 +34,7 @@ jobs:
           override: true
           components: rust-src
 
-      - name: 🧱 Install Tauri CLI
+      - name: 🧱 Build Tauri app
         run: pnpm dlx tauri@latest build
 
       - name: 📤 Upload macOS Build Artifacts
