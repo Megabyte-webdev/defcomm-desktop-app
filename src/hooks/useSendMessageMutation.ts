@@ -24,11 +24,19 @@ export const useSendMessageMutation = (
     },
 
     onSuccess: async (response, variables) => {
-      const messageData = response?.data?.data;
+      // queryClient.invalidateQueries("chat-history");
+      const messageData = {
+        ...response?.data?.data,
+        mss_type: response?.data?.data?.mss_type,
+        is_my_chat: "yes",
+        ...(response?.data?.data?.mss_type === "call" && {
+          call_state: "ringing", // only add if it's a call
+        }),
+      };
 
       // If already fetched, append new message to existing messages
       queryClient.setQueryData(
-        ["chatMessages", Number(variables.get("current_chat_user"))],
+        ["chatMessages", variables.get("current_chat_user")],
         (old) => {
           if (!old || !Array.isArray(old?.data)) return old;
 
@@ -47,6 +55,7 @@ export const useSendMessageMutation = (
           ...messageData,
           id: messageData?.id_en,
           msg_id: messageData?.id,
+          status: "ringing",
         });
       }
       // Clear input field if provided

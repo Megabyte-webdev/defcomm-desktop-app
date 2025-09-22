@@ -25,7 +25,7 @@ export const NotificationProvider = ({ children }) => {
 
   const markAsSeen = (id) => {
     setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, seen: true } : n))
+      prev.map((n) => (n?.data?.id === id ? { ...n, seen: true } : n))
     );
   };
 

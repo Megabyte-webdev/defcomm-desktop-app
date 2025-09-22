@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import logo from "../assets/logo.png";
 import logoIcon from "../assets/logo-icon.png";
@@ -19,13 +19,23 @@ import { FaSearch } from "react-icons/fa";
 import { MdOutlineMoreVert } from "react-icons/md";
 
 import SEOHelmet from "../engine/SEOHelmet";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
 const DefcommLogin = () => {
+  const navigate = useNavigate();
+  const { authDetails } = useContext(AuthContext);
   const { scrollYProgress } = useScroll();
   const [view, setView] = useState("call");
   const moveDown = useTransform(scrollYProgress, [0, 1], [0, 150]); // Moves intro1 up and down
   const moveUp = useTransform(scrollYProgress, [0, 1], [0, -40]); // Moves intro1 up and down
   const rotateScroll = useTransform(scrollYProgress, [0, 1], [0, 360]); // Rotates scroll image
+
+  useEffect(() => {
+    if (authDetails?.user) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [authDetails, navigate]);
   return (
     <>
       {/* SEO Content */}

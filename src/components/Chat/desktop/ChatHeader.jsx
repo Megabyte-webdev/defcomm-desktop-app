@@ -3,35 +3,33 @@ import { ChatContext } from "../../../context/ChatContext";
 import logoIcon from "../../../assets/logo-icon.png";
 import { FiPhone, FiVideo } from "react-icons/fi";
 import { motion } from "framer-motion";
+import { useLocation } from "react-router-dom";
 export default function ChatHeader() {
-  const {
-    selectedChatUser,
-    setShowCall,
-    setCallType,
-    typingUsers,
-    setModalTitle,
-  } = useContext(ChatContext);
+  const { setShowCall, setCallType, typingUsers, setModalTitle } =
+    useContext(ChatContext);
+  const location = useLocation();
+  const chatUserData = location?.state;
   return (
     <div className="flex items-center justify-between p-4 border-b border-gray-700">
-      {selectedChatUser ? (
+      {chatUserData ? (
         <div className="flex items-center space-x-4">
           <figure className="relative w-12 h-12 bg-gray-400 rounded-full flex items-center justify-center text-black font-bold">
             <img
               src={
-                selectedChatUser?.image
-                  ? `${import.meta.env.VITE_BASE_URL}${selectedChatUser?.image}`
+                chatUserData?.image
+                  ? `${import.meta.env.VITE_BASE_URL}${chatUserData?.image}`
                   : logoIcon
               }
-              alt={selectedChatUser?.contact_name?.split("")[0]}
+              alt={chatUserData?.contact_name?.split("")[0]}
               className="rounded-full"
             />
             <span
               className={`${
-                selectedChatUser?.contact_status === "active"
+                chatUserData?.contact_status === "active"
                   ? "bg-green-500"
-                  : selectedChatUser?.contact_status === "pending"
+                  : chatUserData?.contact_status === "pending"
                   ? "bg-red-500"
-                  : selectedChatUser?.contact_status === "busy"
+                  : chatUserData?.contact_status === "busy"
                   ? "bg-yellow"
                   : "bg-gray-400"
               } w-3 h-3 absolute bottom-[-2%] right-[5%] rounded-full border-[2px] border-white`}
@@ -39,9 +37,9 @@ export default function ChatHeader() {
           </figure>
           <div>
             <div className="font-semibold capitalize">
-              {selectedChatUser?.contact_name}
+              {chatUserData?.contact_name}
             </div>
-            {typingUsers?.[Number(selectedChatUser?.contact_id)] && (
+            {typingUsers?.[Number(chatUserData?.contact_id)] && (
               <div className="text-green-400 text-sm">Typing...</div>
             )}
           </div>
@@ -49,7 +47,7 @@ export default function ChatHeader() {
       ) : (
         <p className="font-bold text-lg">Chat</p>
       )}
-      {selectedChatUser && (
+      {chatUserData && (
         <div className="flex gap-5 text-white *:cursor-pointer">
           <motion.button
             whileHover={{ scale: 1.1 }}

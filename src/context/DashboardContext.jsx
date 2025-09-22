@@ -1,6 +1,10 @@
 import React, { createContext, useContext, useReducer } from "react";
 import DashboardReducer from "../reducers/DashboardReducer";
-import { dashboardOptions, utilOptions, dashboardTabs } from "../utils/constants";
+import {
+  dashboardOptions,
+  utilOptions,
+  dashboardTabs,
+} from "../utils/constants";
 
 // Create the context
 export const DashboardContext = createContext();

@@ -5,11 +5,14 @@ import { MdCall, MdCallEnd, MdVolumeOff, MdVolumeUp } from "react-icons/md";
 import audioController from "../utils/audioController";
 import { formatCallDuration } from "../utils/formmaters";
 import useChat from "../hooks/useChat";
+import { AuthContext } from "../context/AuthContext";
+import { FaSpinner } from "react-icons/fa";
 
 const IncomingCallWidget = () => {
   const { callMessage, setCallMessage, setShowCall, setMeetingId } =
     useContext(ChatContext);
   const { setProviderMeetingId } = useContext(MeetingContext);
+  const { authDetails } = useContext(AuthContext);
   const { updateCallLog } = useChat();
 
   const [show, setShow] = useState(false);
@@ -18,22 +21,25 @@ const IncomingCallWidget = () => {
   const callHandledRef = useRef(false); // Prevent multiple triggers
 
   useEffect(() => {
-    if (callMessage?.status === "ringing") {
+    if (
+      callMessage?.status === "ringing" &&
+      callMessage?.user_id !== authDetails?.user_enid
+    ) {
       setShow(true);
       callHandledRef.current = false;
       audioController.playRingtone();
 
-      // Auto-miss after 10s
+      // Auto-miss after 30s
       timeoutRef.current = setTimeout(() => {
         if (!callHandledRef.current) {
           handleReject(true); // autoMiss = true
         }
-      }, 10000);
+      }, 30000);
     } else {
       setShow(false);
       audioController.stopRingtone();
     }
-
+    // console.log("callmessage", callMessage);
     return () => {
       clearTimeout(timeoutRef.current);
     };
@@ -42,7 +48,6 @@ const IncomingCallWidget = () => {
   const handleAccept = () => {
     if (callHandledRef.current) return;
     callHandledRef.current = true;
-
     clearTimeout(timeoutRef.current);
     audioController.stopRingtone();
     setMeetingId(callMessage?.meetingId);
@@ -59,19 +64,19 @@ const IncomingCallWidget = () => {
     audioController.stopRingtone();
 
     try {
+      console.log("callMessage", callMessage);
+
       await updateCallLog.mutateAsync({
         mss_id: callMessage?.id || callMessage?.msg_id,
-        call_duration: formatCallDuration(0),
+        call_duration: "00:00",
         call_state: "miss",
-        recieve_user_id: callMessage?.user_id,
-        auto_miss: autoMiss,
       });
     } catch (error) {
       console.warn("Call rejection log failed:", error);
+    } finally {
+      setCallMessage(null);
+      setShow(false);
     }
-
-    setCallMessage(null);
-    setShow(false);
   };
 
   const handleToggleMute = () => {
@@ -111,10 +116,15 @@ const IncomingCallWidget = () => {
           <MdCall size={24} />
         </button>
         <button
+          disabled={updateCallLog.isPending}
           onClick={() => handleReject(false)}
           className="bg-red-500 hover:bg-red-600 text-white w-12 h-12 rounded-full flex items-center justify-center"
         >
-          <MdCallEnd size={24} />
+          {updateCallLog.isPending ? (
+            <FaSpinner size={24} className="animate-spin" />
+          ) : (
+            <MdCallEnd size={24} />
+          )}
         </button>
       </div>
     </div>

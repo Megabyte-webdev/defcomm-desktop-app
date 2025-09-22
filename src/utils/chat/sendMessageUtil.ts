@@ -1,20 +1,20 @@
 import { UseMutationResult } from "@tanstack/react-query";
 import { AxiosInstance } from "axios";
-import { onFailure } from "../../utils/notifications/OnFailure";
+import { onFailure } from "../notifications/OnFailure";
 
 interface SendMessageParams {
-  client: AxiosInstance;
-  message: String;
+  message: string;
   file: File | null;
   chat_user_type: string;
   chat_user_id: string;
-  chat_id: string;
+  chat_id: string | null;
   mss_type: string;
   sendMessageMutation: UseMutationResult<any, unknown, FormData, unknown>;
+  tag_users: any | null;
+  tag_mess: string | null;
 }
 
 export const sendMessageUtil = async ({
-  client,
   message,
   file,
   chat_user_type = "user",
@@ -22,6 +22,8 @@ export const sendMessageUtil = async ({
   chat_id,
   sendMessageMutation,
   mss_type = "text",
+  tag_users = null,
+  tag_mess = null,
 }: SendMessageParams) => {
   if (!message.trim() && !file) return; // Prevent empty message submission
 
@@ -33,6 +35,13 @@ export const sendMessageUtil = async ({
   } else {
     formData.append("message", message);
     formData.append("is_file", "no");
+  }
+
+  if (tag_users) {
+    formData.append("tag_user", tag_users);
+  }
+  if (tag_mess) {
+    formData.append("tag_mess", tag_mess);
   }
 
   formData.append("current_chat_user_type", chat_user_type);

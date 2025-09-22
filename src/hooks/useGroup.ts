@@ -58,7 +58,19 @@ const useGroups = () => {
       staleTime: 1000 * 60 * 5, // Cache for 5 minutes
     });
 
-    // Fetch members of a specific group
+  const useFetchGroupInfo = (groupId: string | null) =>
+    useQuery({
+      queryKey: ["groupInfo", groupId], // Ensure unique cache per groupId
+      queryFn: async () => {
+        if (!groupId) return [];
+        const { data } = await client.get(`/user/group/member/${groupId}`);
+        return data || {};
+      },
+      enabled: !!authDetails && !!groupId, // Fetch only when authenticated and groupId is provided
+      staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    });
+
+  // Fetch members of a specific group
   const useFetchPendingFiles = () =>
     useQuery({
       queryKey: ["pendingFiles"], // Ensure unique cache per groupId
@@ -66,23 +78,27 @@ const useGroups = () => {
         const { data } = await client.get(`/user/file/pending`);
         return data?.data || [];
       },
-      enabled: !!authDetails , // Fetch only when authenticated and groupId is provided
+      enabled: !!authDetails, // Fetch only when authenticated and groupId is provided
       staleTime: 1000 * 60 * 5, // Cache for 5 minutes
     });
 
-
   // Add to contact mutation
   const addContactMutation = useMutation({
-    mutationFn: (userId: string) =>
-      client.get(`/user/contact/add/${userId}`),
+    mutationFn: (userId: string) => client.get(`/user/contact/add/${userId}`),
     onSuccess: () => {
       queryClient.invalidateQueries(["contacts"]);
-      onSuccess({ message: "Contact Successfully Saved!", success: "user has been added to contact" });
+      onSuccess({
+        message: "Contact Saved!",
+        success: "user has been added to contact",
+      });
     },
     onError: (err) => {
-      onFailure({ message: "Failed to accept invitation", error: extractErrorMessage(err)});
+      onFailure({
+        message: "Failed to accept invitation",
+        error: extractErrorMessage(err),
+      });
       return false; // Return something to handle failure
-    }
+    },
   });
 
   // Remove to contact mutation
@@ -91,12 +107,18 @@ const useGroups = () => {
       client.get(`/user/contact/remove/${userId}`),
     onSuccess: () => {
       queryClient.invalidateQueries(["contacts"]);
-      onSuccess({ message: "Contact successfully removed!", success: "user has been removed from contact" });
+      onSuccess({
+        message: "Contact Removed!",
+        success: "user has been removed from contact",
+      });
     },
     onError: (err) => {
-      onFailure({ message: "Failed to accept invitation", error: extractErrorMessage(err) });
+      onFailure({
+        message: "Failed to accept invitation",
+        error: extractErrorMessage(err),
+      });
       return false; // Return something to handle failure
-    }
+    },
   });
 
   // Accept invitation mutation
@@ -108,8 +130,11 @@ const useGroups = () => {
       queryClient.invalidateQueries(["pendingInvitations"]);
     },
     onError: (err) => {
-      onFailure({ message: "Failed to accept invitation", error: extractErrorMessage(err)});
-    }
+      onFailure({
+        message: "Failed to accept invitation",
+        error: extractErrorMessage(err),
+      });
+    },
   });
 
   // Decline invitation mutation
@@ -120,8 +145,11 @@ const useGroups = () => {
       queryClient.invalidateQueries(["pendingInvitations"]);
     },
     onError: (err) => {
-      onFailure({ message: "Failed to decline invitation", error: extractErrorMessage(err)});
-    }
+      onFailure({
+        message: "Failed to decline invitation",
+        error: extractErrorMessage(err),
+      });
+    },
   });
 
   return {
@@ -132,7 +160,8 @@ const useGroups = () => {
     declineMutation,
     addContactMutation,
     removeContactMutation,
-    useFetchPendingFiles
+    useFetchPendingFiles,
+    useFetchGroupInfo,
   };
 };
 

@@ -71,7 +71,7 @@ const LoginForm = ({ version }) => {
   return (
     <div className="w-full max-w-[780px] flex justify-center lg:justify-end items-center pt-20">
       {useScanMode ? (
-        <ScanLogin />
+        <ScanLogin onToggle={() => setUseScanMode(false)} />
       ) : (
         <form
           onSubmit={handleSubmit(onSubmit)}

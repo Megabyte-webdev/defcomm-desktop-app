@@ -88,6 +88,18 @@ export const formatDate = (dateString) => {
     day: "numeric",
   });
 };
+export const formatLocalTime = () => {
+  return new Date().toLocaleString("en-GB", {
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+};
 
 export const maskEmail = (email) => {
   if (!email) return "";
@@ -96,3 +108,46 @@ export const maskEmail = (email) => {
 };
 
 export const maskPhone = (phone) => `${phone.substring(0, 5)}******`;
+export const stringToColor = (str) => {
+  if (typeof str !== "string" || !str.trim()) {
+    // Fallback: dark gray for invalid or empty strings
+    return "hsl(0, 0%, 20%)";
+  }
+
+  let hash = 0;
+
+  // Create a stable hash from the string
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+
+  const hue = Math.abs(hash % 360); // 0–359
+  const saturation = 80 + (Math.abs(hash) % 10); // 80%–89%
+  const lightness = 25 + (Math.abs(hash) % 10); // 25%–34%
+
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+};
+
+export const formatDateTimeForBackend = (datetimeLocal) => {
+  if (!datetimeLocal) return "";
+
+  let date;
+
+  if (datetimeLocal instanceof Date) {
+    date = datetimeLocal;
+  } else if (typeof datetimeLocal === "string" && datetimeLocal.includes("T")) {
+    date = new Date(datetimeLocal); // interpret local input
+  } else {
+    return "";
+  }
+
+  // Convert to UTC components
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  const hours = String(date.getUTCHours()).padStart(2, "0");
+  const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+
+  // Final string for backend
+  return `${year}-${month}-${day} ${hours}:${minutes}:00`;
+};

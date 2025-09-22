@@ -6,9 +6,9 @@ export const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const queryClient = useQueryClient();
 
-  // Read from sessionStorage on mount
+  // Read from localStorage on mount
   const [authDetails, setAuthDetails] = useState(() => {
-    const storedUser = sessionStorage.getItem("authUser");
+    const storedUser = localStorage.getItem("authUser");
     return storedUser ? JSON.parse(storedUser) : null;
   });
 
@@ -29,10 +29,10 @@ export const AuthProvider = ({ children }) => {
   const updateAuth = (newUser) => {
     setAuthDetails(newUser);
     if (newUser) {
-      sessionStorage.setItem("authUser", JSON.stringify(newUser));
+      localStorage.setItem("authUser", JSON.stringify(newUser));
       queryClient.setQueryData(["authUser"], newUser); // Update React Query
     } else {
-      sessionStorage.removeItem("authUser");
+      localStorage.removeItem("authUser");
       queryClient.removeQueries(["authUser"]); // Completely remove query
     }
   };

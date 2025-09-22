@@ -124,10 +124,71 @@ const useAuth = () => {
       });
     },
   });
+  // 1️⃣ Generate QR Session
+  const qrCreateQuery = useQuery({
+    queryKey: ["qr-create"],
+    queryFn: async () => {
+      const { data } = await client.post("/qr/create");
+      return data; // should contain sessionId or token
+    },
+    enabled: false, // run manually
+    onError: (err) => {
+      onFailure({
+        message: "Failed to generate QR",
+        error: extractErrorMessage(err),
+      });
+    },
+  });
+
+  // ⏳ QR Status Polling
+  const logQrUser = useMutation({
+    mutationFn: async (sessionId) => {
+      if (!sessionId) return;
+      const data = await client.post(`/qr/${sessionId}/exchange`, {
+        confirm: true,
+      });
+      return data?.data;
+    },
+    onSuccess: (userData) => {
+      console.log(userData);
+      if (userData) {
+        updateAuth(userData?.data);
+        navigate("/dashboard", { replace: true });
+        onSuccess({
+          message: "QR Login Successful",
+          success: "Welcome back!",
+        });
+      }
+    },
+  });
+
+  const useQrStatus = (sessionId) => {
+    return useQuery({
+      queryKey: ["qr-status", sessionId],
+      queryFn: async () => {
+        const { data } = await client.get(`/qr/${sessionId}/status`);
+        console.log("QR Status:", data);
+
+        if (data?.status === "approved") {
+          // 🔐 trigger login exchange once approved
+          logQrUser.mutate(sessionId);
+        }
+
+        return data;
+      },
+      enabled: !!sessionId, // only run if sessionId exists
+      refetchInterval: (lastData) => {
+        // ✅ stop polling once approved
+        if (lastData?.status === "approved") return false;
+        return 2000; // otherwise keep polling every 2s
+      },
+    });
+  };
 
   // 🚪 Logout
   const logoutMutation = useMutation({
     mutationFn: async () => {
+      await client.post("/auth/logout");
       queryClient.clear(); // Clear cache
     },
     onSuccess: () => {
@@ -150,11 +211,13 @@ const useAuth = () => {
     requestOtp: requestOtpMutation.isPending,
     verifyOtp: verifyOtpMutation.isPending,
     logout: logoutMutation.isPending,
+    qrCreate: qrCreateQuery.isFetching,
     overall:
       loginMutation.isPending ||
       profileMutation.isPending ||
       requestOtpMutation.isPending ||
       verifyOtpMutation.isPending ||
+      qrCreateQuery.isFetching ||
       logoutMutation.isPending,
   };
 
@@ -165,6 +228,9 @@ const useAuth = () => {
     requestOtp: requestOtpMutation.mutateAsync,
     logout: logoutMutation.mutate,
     isLoading,
+    qrCreate: qrCreateQuery.refetch,
+    useQrStatus,
+    logQrUser,
     profileQuery, // <-- added here
   };
 };

@@ -17,9 +17,7 @@ function CallSummary({ callSummary }: CallSummaryProps) {
         <strong className="pr-2">Receiver:</strong>{" "}
         <span>{callSummary.receiver}</span>
         <strong className="pr-2">Duration:</strong>
-        <span>
-          {new Date(callSummary.duration * 1000).toISOString().substr(14, 5)}
-        </span>
+        <span>{callSummary?.duration}</span>
       </div>
     </div>
   );
